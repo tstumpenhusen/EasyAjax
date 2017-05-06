@@ -25,15 +25,12 @@ define(["JS"], function(JS) {
 
       _request.onload = function() {
         if (_request.status >= 200 && _request.status < 400) {
-          var data = null;
           if (method === "JSON") {
-            data = JSON.parse(_request.responseText);
-          } else {
-            data = _request.responseText;
+            _request.responseText = JSON.parse(_request.responseText);
           }
 
           if (typeof _callback === "function") {
-            _callback(data);
+            _callback(_request.responseText);
           }
 
         } else {
