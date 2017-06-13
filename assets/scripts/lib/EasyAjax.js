@@ -23,6 +23,8 @@ define(["JS"], function(JS) {
         this.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
       }
 
+      this.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+
       _request.onload = function() {
         if (_request.status >= 200 && _request.status < 400) {
           if (method === "JSON") {
