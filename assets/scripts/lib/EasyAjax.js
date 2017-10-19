@@ -1,9 +1,17 @@
 define(["JS"], function(JS) {
+  
+  /**
+   * @type {EasyAjax}
+   * @returns {EasyAjax}
+   * @constructor
+   */
   var EasyAjax = function() {
     var _request = null,
       _callback = null,
       _errorback = null,
-      _data = "";
+      _data = "",
+      _requestHeader = {},
+      _method;
 
     /**
      * Creates new XMLHttpRequest and sets Defaults by method
@@ -15,13 +23,10 @@ define(["JS"], function(JS) {
      */
     function Request(method, url, data) {
       method = method.toUpperCase();
+      _method = method;
       _request = new XMLHttpRequest();
       _request.open(method, url, true);
       _data = data;
-
-      if (method === "POST") {
-        this.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-      }
 
       this.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 
@@ -45,21 +50,31 @@ define(["JS"], function(JS) {
 
     Request.prototype = {
       /**
-       * Sets Header of Request
+       * Adds a Headervalue, which will be added to the Request before send
        * @param header
        * @param value
        * @chainable
-       * @returns {Request}
+       * @returns {EasyAjax}
        */
       setRequestHeader: function(header, value) {
-        _request.setRequestHeader(header, value);
+        if (!_requestHeader.hasOwnProperty(header)) {
+          _requestHeader[header] = [];
+        }
+        _requestHeader[header].push(value);
         return this;
       },
 
+      getRequestHeader: function(header) {
+        if (!header) {
+          return _requestHeader;
+        }
+        return _requestHeader[header];
+      },
+      
       /**
        * Sets Callback for successful ajax-request
        * @param callback
-       * @returns {Request}
+       * @returns {EasyAjax}
        */
       setCallback: function(callback) {
         if (typeof callback === "function") {
@@ -71,19 +86,19 @@ define(["JS"], function(JS) {
       /**
        * Sets Errorback for failed ajax-request
        * @param errorback
-       * @returns {Request}
+       * @returns {EasyAjax}
        */
       setErrorback: function(errorback) {
         if (typeof errorback === "function") {
-          _request.onerror = errorback;
+          _errorback = errorback;
         }
         return this;
       },
 
       /**
        * Sets the data sent by the request
-       * @param data
-       * @returns {Request}
+       * @param {string} data
+       * @returns {EasyAjax}
        */
       setData: function(data) {
         _data = data;
@@ -91,10 +106,40 @@ define(["JS"], function(JS) {
       },
 
       /**
+       * Sets the data sent by the request
+       * @param {string} data
+       * @returns {EasyAjax}
+       */
+      addData: function(data) {
+        if(!!_data && !!data){
+          _data += "&";
+        }
+        
+        _data = _data || "";
+        _data += data;
+        return this;
+      },
+      
+      /**
        * Triggers Request to send
        */
       send: function() {
+        if (_method === "POST" && !this.getRequestHeader("Content-Type")) {
+          this.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+          this.setRequestHeader("Content-Type", "charset=UTF-8");
+        }
+        for (var header in _requestHeader) {
+          if (Object.prototype.toString.apply(_requestHeader[header]) === "[object Array]") {
+            headerValue = _requestHeader[header].join("; ");
+            _request.setRequestHeader(header, headerValue);
+          }
+        }
+        try {
         _request.send(_data);
+      }
+        catch(e){
+          _errorback();
+        }
       }
     };
 
@@ -102,12 +147,30 @@ define(["JS"], function(JS) {
   };
 
   return {
+    /**
+     *
+     * @param {string} url
+     * @param {string} data
+     * @returns {EasyAjax}
+     */
     get: function(url, data) {
       return new EasyAjax("get", url, data);
     },
+    /**
+     *
+     * @param {string} url
+     * @param {string} data
+     * @returns {EasyAjax}
+     */
     post: function(url, data) {
       return new EasyAjax("post", url, data);
     },
+    /**
+     *
+     * @param {string} url
+     * @param {string} data
+     * @returns {EasyAjax}
+     */
     json: function(url, data) {
       return new EasyAjax("json", url, data);
     }
