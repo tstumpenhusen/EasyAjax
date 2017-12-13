@@ -129,14 +129,15 @@ define(["JS"], function(JS) {
           this.setRequestHeader("Content-Type", "charset=UTF-8");
         }
         for (var header in _requestHeader) {
-          if (Object.prototype.toString.apply(_requestHeader[header]) === "[object Array]") {
+          if (_requestHeader.hasOwnProperty(header)
+            && Object.prototype.toString.apply(_requestHeader[header]) === "[object Array]") {
             headerValue = _requestHeader[header].join("; ");
             _request.setRequestHeader(header, headerValue);
           }
         }
         try {
-        _request.send(_data);
-      }
+          _request.send(_data || null);
+        }
         catch(e){
           _errorback();
         }
