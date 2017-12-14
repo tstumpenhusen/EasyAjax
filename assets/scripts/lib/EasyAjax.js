@@ -136,10 +136,11 @@ define(["JS"], function(JS) {
           }
         }
         try {
-          _request.send(_data || null);
+          var sendData = _data !== false && _data !== undefined ? _data : null;
+          _request.send(sendData);
         }
         catch(e){
-          _errorback();
+          _errorback(e);
         }
       }
     };
