@@ -127,6 +127,8 @@ define(["JS"], function(JS) {
         if (_method === "POST" && !this.getRequestHeader("Content-Type")) {
           this.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
           this.setRequestHeader("Content-Type", "charset=UTF-8");
+        } else if (this.getRequestHeader("Content-Type").indexOf("multipart/form-data") !== -1) {
+          delete _requestHeader["Content-Type"];
         }
         for (var header in _requestHeader) {
           if (_requestHeader.hasOwnProperty(header)
