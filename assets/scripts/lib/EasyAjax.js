@@ -124,9 +124,15 @@ define(["JS"], function(JS) {
        * Triggers Request to send
        */
       send: function() {
-        if (_method === "POST" && !this.getRequestHeader("Content-Type")) {
-          this.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-          this.setRequestHeader("Content-Type", "charset=UTF-8");
+        if (_method === "POST") {
+            var _contentType = this.getRequestHeader("Content-Type");
+            if (!_contentType) {
+                this.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                this.setRequestHeader("Content-Type", "charset=UTF-8");
+            }
+            if (!!_contentType && _contentType.indexOf("multipart/form-data") !== -1) {
+                delete _requestHeader["Content-Type"];
+            }
         }
         for (var header in _requestHeader) {
           if (_requestHeader.hasOwnProperty(header)
